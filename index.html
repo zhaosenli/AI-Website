@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Introduction to Artificial Intelligence</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="history.html">History</a></li>
+                <li><a href="applications.html">Applications</a></li>
+                <li><a href="future.html">Future</a></li>
+            </ul>
+        </nav>
+    </header>
+    <section class="game-container">
+        <h2>Tic-Tac-Toe Game</h2>
+        <div class="board" id="board">
+            <div class="cell" id="0" onclick="makeMove(this, 0)"></div>
+            <div class="cell" id="1" onclick="makeMove(this, 1)"></div>
+            <div class="cell" id="2" onclick="makeMove(this, 2)"></div>
+            <div class="cell" id="3" onclick="makeMove(this, 3)"></div>
+            <div class="cell" id="4" onclick="makeMove(this, 4)"></div>
+            <div class="cell" id="5" onclick="makeMove(this, 5)"></div>
+            <div class="cell" id="6" onclick="makeMove(this, 6)"></div>
+            <div class="cell" id="7" onclick="makeMove(this, 7)"></div>
+            <div class="cell" id="8" onclick="makeMove(this, 8)"></div>
+        </div>
+        <p id="result"></p>
+        <button id="restartButton" onclick="restartGame()">Restart Game</button>
+        <h2>An example of AI in action</h2>
+    </section>
+    
+    <main>
+        <section>
+            <h2>Welcome to Our AI Website</h2>
+            <p>This website provides an overview of Artificial Intelligence, its history, applications, and future.</p>
+            <img src="Annotation 2024-12-11 115637.png" alt="AI Header Image">
+        </section>
+        
+        <section>
+            <h2>What is Artificial Intelligence?</h2>
+            <p>Artificial Intelligence (AI) is the simulation of human intelligence processes by machines, especially computer systems. These processes include learning (the acquisition of information and rules for using the information), reasoning (using the rules to reach approximate or definite conclusions), and self-correction.</p>
+        </section>
+        
+        <section>
+            <h2>Why is AI Important?</h2>
+            <p>AI is important because it can automate tasks, analyze data, and provide insights that humans might miss. It is transforming industries and improving efficiency in many areas.</p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>Website about AI by Jonathan, Jessie, Peter and Nicholas</p>
+    </footer>
+
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'O'; // Player starts first as 'O'
+        let gameOver = false;
+
+        function makeMove(cell, index) {
+            if (gameOver || cell.textContent !== '') {
+                return; // Ignore clicks on already-filled cells or if the game is over
+            }
+
+            // Player move
+            cell.textContent = currentPlayer;
+            board[index] = currentPlayer;
+
+            // Check for game result
+            const result = checkWin();
+            if (result) {
+                endGame(result);
+                return;
+            }
+
+            // Switch to AI's turn
+            currentPlayer = 'X';
+            setTimeout(aiMove, 500); // AI moves after 500ms
+        }
+
+        function aiMove() {
+            if (gameOver) return;
+
+            // AI picks the best move using minimax
+            let bestScore = -Infinity;
+            let bestMove = null;
+
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === '') {
+                    board[i] = 'X'; // AI temporarily makes a move
+                    let score = minimax(board, 0, false); // Evaluate move
+                    board[i] = ''; // Undo the move
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = i;
+                    }
+                }
+            }
+
+            if (bestMove !== null) {
+                let cell = document.getElementById(bestMove);
+                cell.textContent = 'X';
+                board[bestMove] = 'X';
+            }
+
+            // Check for game result
+            const result = checkWin();
+            if (result) {
+                endGame(result);
+                return;
+            }
+
+            // Switch back to player's turn
+            currentPlayer = 'O';
+        }
+
+        function minimax(board, depth, isMaximizing) {
+            const result = checkWin();
+            if (result) {
+                return scores[result];
+            }
+
+            if (isMaximizing) {
+                let bestScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        let score = minimax(board, depth + 1, false);
+                        board[i] = '';
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+                return bestScore;
+            } else {
+                let bestScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        let score = minimax(board, depth + 1, true);
+                        board[i] = '';
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+                return bestScore;
+            }
+        }
+
+        const scores = {
+            'X': 10,
+            'O': -10,
+            'tie': 0
+        };
+
+        function checkWin() {
+            const winPatterns = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+                [0, 4, 8], [2, 4, 6]             // diagonals
+            ];
+
+            for (let pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a]; // Return the winner ('X' or 'O')
+                }
+            }
+
+            if (!board.includes('')) {
+                return 'tie'; // Return 'tie' if the board is full and no winner
+            }
+
+            return null; // No winner yet
+        }
+
+        function endGame(result) {
+            gameOver = true;
+            if (result === 'tie') {
+                document.getElementById('result').textContent = "It's a tie!";
+            } else {
+                document.getElementById('result').textContent = `${result === 'O' ? 'Player' : 'AI'} wins!`;
+            }
+        }
+
+        function restartGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'O';
+            gameOver = false;
+            document.getElementById('board').innerHTML = `
+                <div class="cell" id="0" onclick="makeMove(this, 0)"></div>
+                <div class="cell" id="1" onclick="makeMove(this, 1)"></div>
+                <div class="cell" id="2" onclick="makeMove(this, 2)"></div>
+                <div class="cell" id="3" onclick="makeMove(this, 3)"></div>
+                <div class="cell" id="4" onclick="makeMove(this, 4)"></div>
+                <div class="cell" id="5" onclick="makeMove(this, 5)"></div>
+                <div class="cell" id="6" onclick="makeMove(this, 6)"></div>
+                <div class="cell" id="7" onclick="makeMove(this, 7)"></div>
+                <div class="cell" id="8" onclick="makeMove(this, 8)"></div>
+            `;
+            document.getElementById('result').textContent = '';
+        }
+    </script>
+</body>
+</html>
